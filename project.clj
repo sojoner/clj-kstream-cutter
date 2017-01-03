@@ -1,6 +1,6 @@
 (defproject clj-kstream-cutter "0.1.0-SNAPSHOT"
-  :description "FIXME: write description"
-  :url "http://example.com/FIXME"
+  :description "A Clojure app to process one kafka topics. Select a .json\nfield and split this into a list of token."
+  :url "git@github.com:sojoner/clj-kstream-cutter.git"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.9.0-alpha14"]
@@ -17,4 +17,7 @@
                                                     com.sun.jmdk/jmxtools
                                                     com.sun.jmx/jmxri]]]
   :aot :all
-  :main clj-kstream-cutter.core)
+  :main clj-kstream-cutter.core
+  :uberjar-name "clj-kstream-cutter.jar"
+  :profiles {:uberjar {:aot :all}}
+  :jvm-opts ["-Xmx2g" "-server"])
