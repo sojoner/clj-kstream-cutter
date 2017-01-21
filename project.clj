@@ -1,4 +1,4 @@
-(defproject clj-kstream-cutter "0.1.0-SNAPSHOT"
+(defproject clj-kstream-cutter "0.2.0"
   :description "A Clojure app to process one kafka topics. Select a .json\nfield and split this into a list of token."
   :url "git@github.com:sojoner/clj-kstream-cutter.git"
   :license {:name "Eclipse Public License"
