@@ -60,8 +60,12 @@
     (-> log-stream
         (.flatMapValues (reify ValueMapper
                           (apply [this value]
-                            (let [value-as-dict (json/read-str value :key-fn keyword)]
-                              (split-string-value-of-dict value-as-dict (:selector conf) )))))
+                            (try
+                               (let [value-as-dict (json/read-str value :key-fn keyword)]
+                                 (split-string-value-of-dict value-as-dict (:selector conf) ))
+                               (catch Exception e
+                                 (error "Failed parsing .json" e)
+                                 (list))))))
         (.map  (reify KeyValueMapper
                  (apply [this k v]
                    (KeyValue. v v))))
