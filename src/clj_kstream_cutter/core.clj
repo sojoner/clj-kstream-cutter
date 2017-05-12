@@ -35,11 +35,12 @@
   "The kafka properties"
   (doto (new Properties)
     (.put StreamsConfig/APPLICATION_ID_CONFIG (:name conf))
-    (.put StreamsConfig/BOOTSTRAP_SERVERS_CONFIG (:kafka-brokers conf))
-    (.put StreamsConfig/ZOOKEEPER_CONNECT_CONFIG (:zookeeper-servers conf))))
+    (.put StreamsConfig/BOOTSTRAP_SERVERS_CONFIG (:kafka-brokers conf))))
 
 (defn split-string-value-of-dict [data selector]
   "Select a value given by the selector path, and split the string at the white space."
+  (info "DATA:" data)
+  (info "SELCTOR:" selector)
   (try
     (let [field-value (get-in data (into [] (first selector)))]
       (map #(clojure.string/trim %1)
@@ -48,7 +49,7 @@
       (error "Failed parsing field: " selector e)
       (list))))
 
-(defn- stream-mapper
+(defn stream-mapper
   "Main stream processor takes a configuration and a mapper function to apply."
   [conf ]
   (let [streamBuilder (KStreamBuilder.)
@@ -68,6 +69,7 @@
                                  (list))))))
         (.map  (reify KeyValueMapper
                  (apply [this k v]
+                   (info v)
                    (KeyValue. v v))))
         (.through stringSerde stringSerde (:output-topic conf)))
 
@@ -75,8 +77,7 @@
 
 (defn -main [& args]
   (let [{:keys [options arguments errors summary]} (cli/parse-opts args cli-def/cli-options)
-        conf {:kafka-brokers         (:broker options)
-              :zookeeper-servers   (:zookeeper options)
+        conf {:kafka-brokers (:broker options)
               :input-topic (:input-topic options)
               :output-topic   (:output-topic options)
               :selector (:selector options)

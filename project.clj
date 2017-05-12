@@ -19,5 +19,6 @@
   :aot :all
   :main clj-kstream-cutter.core
   :uberjar-name "clj-kstream-cutter.jar"
-  :profiles {:uberjar {:aot :all}}
-  :jvm-opts ["-Xmx2g" "-server"])
+  :profiles {:uberjar {:aot :all}
+             :dev {:dependencies [[org.clojure/test.check "0.9.0"]]}}
+  :jvm-opts ["-Xmx1g" "-server"])
