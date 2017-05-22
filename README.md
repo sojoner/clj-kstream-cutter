@@ -30,7 +30,6 @@ The topic you are consuming needs to have **^String** Keys and **^String** .json
 
     $lein check
     $lein run --broker kafka-broker:9092 --zookeeper zookeeper:2181 --input-topic logs-replay --output-topic mapped-test-json --selector msg --name stream-cut-json-field
-
 ## Usage java
 
     $java - jar clj-kstream-cutter.jar --broker kafka-broker:9092 --zookeeper zookeeper:2181 --input-topic logs-replay --output-topic mapped-test-json --selector msg --name stream-cut-json-field

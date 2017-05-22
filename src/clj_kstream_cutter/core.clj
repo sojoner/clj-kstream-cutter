@@ -3,20 +3,25 @@
   (:require [clojure.data.json :as json]
             [clj-kstream-cutter.cli :as cli-def]
             [clojure.tools.cli :as cli])
-  (:import (org.apache.kafka.streams KafkaStreams
-                                     StreamsConfig KeyValue)
-           (org.apache.kafka.streams.kstream KStream
-                                             KStreamBuilder
-                                             KTable KeyValueMapper ForeachAction ValueMapper)
-           (org.apache.kafka.streams.processor AbstractProcessor)
-           (org.apache.kafka.common.serialization Deserializer
-                                                  Serde
-                                                  Serdes
-                                                  Serializer)
-           (org.apache.kafka.common.serialization StringDeserializer
-                                                  StringSerializer)
-           (java.util Properties)
-           (java.util.function Function))
+
+  (:import
+    (kafka.utils ZKStringSerializer$ ZkUtils)
+    (kafka.admin AdminUtils RackAwareMode RackAwareMode$Enforced$)
+    (org.apache.kafka.streams KafkaStreams
+                              StreamsConfig KeyValue)
+    (org.apache.kafka.streams.kstream KStream
+                                      KStreamBuilder
+                                      KTable KeyValueMapper ForeachAction ValueMapper)
+    (org.apache.kafka.streams.processor AbstractProcessor)
+    (org.apache.kafka.common.serialization Deserializer
+                                           Serde
+                                           Serdes
+                                           Serializer)
+    (org.apache.kafka.common.serialization StringDeserializer
+                                           StringSerializer)
+    (java.util Properties)
+    (java.util.function Function)
+    (org.I0Itec.zkclient ZkClient ZkConnection))
   (:gen-class))
 
 (def string_ser
@@ -73,6 +78,15 @@
 
     (.start (KafkaStreams. streamBuilder (get-props conf)))))
 
+(defn check-topic [zookeeper topic]
+  (info "ZK:" zookeeper " Topic: " topic)
+  (try
+     (with-open [zkClient (new ZkClient zookeeper 10000 8000 ZKStringSerializer$/MODULE$)]
+       (let [zkUtils (new ZkUtils zkClient (new ZkConnection zookeeper), false)]
+         (AdminUtils/createTopic zkUtils topic, 1, 1, (new Properties), RackAwareMode$Enforced$/MODULE$)))
+     (catch Exception e
+       (error "Failed to create topic" e))))
+
 (defn -main [& args]
   (let [{:keys [options arguments errors summary]} (cli/parse-opts args cli-def/cli-options)
         conf {:kafka-brokers         (:broker options)
@@ -85,4 +99,6 @@
       (:help options) (cli-def/exit 0 (cli-def/usage summary))
       (not= (count (keys options)) 6) (cli-def/exit 1 (cli-def/usage summary))
       (not (nil? errors)) (cli-def/exit 1 (cli-def/error-msg errors)))
+    (check-topic (:zookeeper-servers conf)(:input-topic conf))
+    (check-topic (:zookeeper-servers conf)(:output-topic conf))
     (stream-mapper conf)))
